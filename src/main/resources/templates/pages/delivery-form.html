@@ -28,11 +28,7 @@
                         <div class="mb-3">
                             <label for="coursier" class="form-label">Mensajero</label>
                             <select name="coursier" id="coursier" class="form-select" required>
-                                <option th:each="c : ${coursiers}" th:value="${c}" th:text="${c}"></option>
-                                <option value="Servicio Externo">Servicio Externo</option>
-                                <option value="Medellín">Medellín</option>
-                                <option value="Dflex">Dflex</option>
-                                <option value="SAP">SAP</option>
+                                <option th:each="c : ${coursiers}" th:value="${c.id}" th:text="${c.name}"></option>
                             </select>
                         </div>
 
@@ -120,10 +116,24 @@
             if (items.includes(code) || items.includes(code + "**")) {
                 return alert("No puedes repetir pedidos");
             }
-            items.push(code);
-            localStorage.setItem("items", JSON.stringify(items));
-            updateSelect();
-            input.value = '';
+
+            fetch(`/api/check-client/${code}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.exists) {
+                        alert(data.message || "Cliente inválido");
+                        return;
+                    }
+                    // Si pasa la validación, agregar a la lista
+                    items.push(code);
+                    localStorage.setItem("items", JSON.stringify(items));
+                    updateSelect();
+                    input.value = '';
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Error validando cliente");
+                });
         }
 
         document.addEventListener("DOMContentLoaded", () => {

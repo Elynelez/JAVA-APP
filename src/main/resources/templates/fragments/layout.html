@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 
 <head>
     <meta charset="UTF-8">
@@ -22,15 +23,15 @@
                     <ul class="navbar-nav ms-auto">
 
                         <!-- Servicios -->
-                        <li class="nav-item dropdown">
+                        <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
                             <a class="nav-link dropdown-toggle" href="#" id="serviciosDropdown" role="button"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                                 Servicios
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="serviciosDropdown">
-                                <li><a class="dropdown-item" href="/delivery/form">Crear Ruta</a></li>
-                                <li><a class="dropdown-item" href="/">Crear Mensajero</a></li>
-                                <li><a class="dropdown-item" href="/">Crear Cliente</a></li>
+                                <li><a class="dropdown-item" href="/delivery/route/form">Crear Ruta</a></li>
+                                <li><a class="dropdown-item" href="/delivery/courier/form">Crear Mensajero</a></li>
+                                <li><a class="dropdown-item" href="/delivery/client/form">Crear Cliente</a></li>
                                 <li><a class="dropdown-item" href="/delivery/table">Tabla de pedidos</a></li>
                                 <li><a class="dropdown-item" href="/">Tabla de clientes</a></li>
                                 <li><a class="dropdown-item" href="/">Administrar usuarios</a></li>
@@ -38,8 +39,8 @@
                             </ul>
                         </li>
 
-                        <!-- Acceso -->
-                        <li class="nav-item dropdown">
+                        <!-- Si NO está logueado -->
+                        <li class="nav-item dropdown" sec:authorize="!isAuthenticated()">
                             <a class="nav-link dropdown-toggle" href="#" id="loginDropdown" role="button"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                                 Acceso
@@ -47,6 +48,21 @@
                             <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="loginDropdown">
                                 <li><a class="dropdown-item" href="/login">Ingresar</a></li>
                                 <li><a class="dropdown-item" href="/register">Registrarse</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- Si está logueado -->
+                        <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <span sec:authentication="name"></span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="userDropdown">
+                                <li>
+                                    <form th:action="@{/logout}" method="post">
+                                        <button type="submit" class="dropdown-item">Cerrar sesión</button>
+                                    </form>
+                                </li>
                             </ul>
                         </li>
 
