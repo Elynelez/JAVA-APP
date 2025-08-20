@@ -40,9 +40,11 @@ public class AppController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @GetMapping("delivery/table")
-    public String table() {
-        return "pages/table";
+    @GetMapping("/delivery/table")
+    public String delivery_table(Model model) {
+        List<Route> routes = routeRepository.findAll();
+        model.addAttribute("routes", routes);
+        return "pages/delivery-table";
     }
 
     @GetMapping("delivery/route/form")
@@ -75,17 +77,20 @@ public class AppController {
     }
 
     @PostMapping("delivery/travel")
-    public String saveRoute(
-            @RequestParam String clientName,
-            @RequestParam String address) {
+    public String saveRoute(@RequestParam List<String> orders,
+            @RequestParam String coursier) {
 
-        Route route = new Route();
-        route.setClientName(clientName);
-        route.setAddress(address);
-        route.setCreatedAt(LocalDateTime.now());
-        route.setDelivered(false);
+        for (String code : orders) {
+            Client client = clientRepository.findById(code)
+                    .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + code));
 
-        routeRepository.save(route);
+            Route route = new Route();
+            route.setClientName(client.getName());
+            route.setAddress(client.getAddress());
+            route.setCreatedAt(LocalDateTime.now());
+            route.setDelivered(false);
+            routeRepository.save(route);
+        }
 
         return "redirect:/delivery/table?success=true";
     }

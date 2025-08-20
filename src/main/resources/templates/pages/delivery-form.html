@@ -117,10 +117,11 @@
                 return alert("No puedes repetir pedidos");
             }
 
-            fetch(`/api/check-client/${code}`)
+            fetch(`/check-client/${code}`)
                 .then(res => res.json())
                 .then(data => {
-                    if (!data.exists) {
+                console.log(data)
+                    if (!data) {
                         alert(data.message || "Cliente inválido");
                         return;
                     }

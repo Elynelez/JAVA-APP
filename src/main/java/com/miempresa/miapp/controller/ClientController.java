@@ -43,4 +43,17 @@ public class ClientController {
         return "redirect:/delivery/client/form?success=true";
     }
 
+    @GetMapping("/check-client/{id}")
+    public ResponseEntity<Boolean> checkClient(@PathVariable String id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        User usuario = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+
+        boolean exists = clientRepository.existsByIdAndUserId(id, usuario);
+
+        return ResponseEntity.ok(exists);
+    }
+
 }

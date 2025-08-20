@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Delivery Table</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rutas de Entrega</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Dirección</th>
+                <th>Fecha de Creación</th>
+                <th>Entregado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="route : ${routes}">
+                <td th:text="${route.id}">1</td>
+                <td th:text="${route.clientName}">Cliente Ejemplo</td>
+                <td th:text="${route.address}">Dirección Ejemplo</td>
+                <td th:text="${#temporals.format(route.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                <td th:text="${route.delivered}">false</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
