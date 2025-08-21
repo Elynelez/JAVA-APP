@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tabla de Clientes</title>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <style>
+        /* Hacer que el body ocupe toda la altura */
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* altura mínima igual a la pantalla */
+        }
+
+        .container {
+            flex: 1; /* ocupa el espacio disponible, empuja el footer hacia abajo */
+        }
+
+        footer {
+            margin-top: auto; /* el footer se queda al final */
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <!-- HEADER -->
+    <div th:insert="fragments/layout :: header"></div>
+
+    <div class="container">
+        <h2 class="mb-4">Lista de Clientes</h2>
+
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID Cliente</th>
+                    <th>Nombre</th>
+                    <th>Teléfono</th>
+                    <th>Dirección</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="client : ${clients}">
+                    <td th:text="${client.id}"></td>
+                    <td th:text="${client.name}"></td>
+                    <td th:text="${client.phone}"></td>
+                    <td th:text="${client.address}"></td>
+                    <td>
+                        <a th:href="@{'/delivery/client/edit/' + ${client.id}}"
+                            class="btn btn-sm btn-primary">Editar</a>
+                        <a th:href="@{'/delivery/client/delete/' + ${client.id}}"
+                            class="btn btn-sm btn-danger">Eliminar</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- FOOTER -->
+    <div th:insert="fragments/layout :: footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

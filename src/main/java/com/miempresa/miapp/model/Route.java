@@ -2,6 +2,7 @@ package com.miempresa.miapp.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "route_java_app")
@@ -14,16 +15,50 @@ public class Route {
     @Column(nullable = false)
     private String clientName;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text")
     private String address;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(nullable = false)
     private Boolean delivered = false;
 
-    // Getters y Setters
+    // --- Nuevos campos ---
+    @ManyToOne
+    @JoinColumn(name = "pickup_courier", referencedColumnName = "id")
+    private Courier pickupCourier;
+
+    @Column(name = "pickup_route")
+    private Integer pickupRoute;
+
+    @Column(name = "delivery_courier")
+    private String deliveryCourier;
+
+    @Column(name = "delivery_route")
+    private Integer deliveryRoute;
+
+    @ManyToOne
+    @JoinColumn(name = "client_id", referencedColumnName = "id")
+    private Client client;
+
+    @Column(name = "client_id", insertable = false, updatable = false)
+    private String clientId;
+
+    // --- Constructores ---
+    public Route() {
+    }
+
+    public Route(String clientName, String address, Courier pickupCourier, String clientId) {
+        this.clientName = clientName;
+        this.address = address;
+        this.pickupCourier = pickupCourier;
+        this.createdAt = LocalDateTime.now();
+        this.delivered = false;
+        this.clientId = clientId;
+    }
+
+    // --- Getters y Setters ---
     public Long getId() {
         return id;
     }
@@ -62,5 +97,77 @@ public class Route {
 
     public void setDelivered(Boolean delivered) {
         this.delivered = delivered;
+    }
+
+    public Courier getPickupCourier() {
+        return pickupCourier;
+    }
+
+    public void setPickupCourier(Courier pickupCourier) {
+        this.pickupCourier = pickupCourier;
+    }
+
+    public Integer getPickupRoute() {
+        return pickupRoute;
+    }
+
+    public void setPickupRoute(Integer pickupRoute) {
+        this.pickupRoute = pickupRoute;
+    }
+
+    public String getDeliveryCourier() {
+        return deliveryCourier;
+    }
+
+    public void setDeliveryCourier(String deliveryCourier) {
+        this.deliveryCourier = deliveryCourier;
+    }
+
+    public Integer getDeliveryRoute() {
+        return deliveryRoute;
+    }
+
+    public void setDeliveryRoute(Integer deliveryRoute) {
+        this.deliveryRoute = deliveryRoute;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    // --- equals y hashCode ---
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof Route))
+            return false;
+        Route route = (Route) o;
+        return Objects.equals(id, route.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    // --- toString ---
+    @Override
+    public String toString() {
+        return "Route{" +
+                "id=" + id +
+                ", clientName='" + clientName + '\'' +
+                ", address='" + address + '\'' +
+                ", createdAt=" + createdAt +
+                ", delivered=" + delivered +
+                ", pickupCourier=" + pickupCourier +
+                ", pickupRoute=" + pickupRoute +
+                ", deliveryCourier='" + deliveryCourier + '\'' +
+                ", deliveryRoute=" + deliveryRoute +
+                '}';
     }
 }

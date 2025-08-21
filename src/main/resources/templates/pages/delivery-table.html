@@ -1,58 +1,64 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
-    <title>Rutas de Entrega | Mensajería Rápida</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <title>Tabla de Pedidos</title>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        footer {
+            margin-top: auto;
+        }
+    </style>
 </head>
 
 <body class="bg-light">
-
     <!-- HEADER -->
     <div th:insert="fragments/layout :: header"></div>
 
-    <div class="container my-5">
-        <div class="card shadow-sm rounded-4 border-0">
-            <div class="card-body p-4">
-                <h3 class="text-center mb-4 text-primary">
-                    <i class="bi bi-truck"></i> Rutas de Entrega
-                </h3>
-
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>ID</th>
-                                <th>Cliente</th>
-                                <th>Dirección</th>
-                                <th>Fecha de Creación</th>
-                                <th>Entregado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="route : ${routes}">
-                                <td th:text="${route.id}">1</td>
-                                <td th:text="${route.clientName}">Cliente Ejemplo</td>
-                                <td th:text="${route.address}">Dirección Ejemplo</td>
-                                <td th:text="${#temporals.format(route.createdAt, 'yyyy-MM-dd HH:mm')}">2025-08-20 10:30</td>
-                                <td>
-                                    <span th:if="${route.delivered}" class="badge bg-success">
-                                        <i class="bi bi-check-circle"></i> Sí
-                                    </span>
-                                    <span th:unless="${route.delivered}" class="badge bg-danger">
-                                        <i class="bi bi-x-circle"></i> No
-                                    </span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+    <main class="container flex-grow-1">
+        <h2 class="mb-4">Lista de Pedidos</h2>
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Fecha de Creación</th>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Dirección</th>
+                    <th>Mensajero Recogida</th>
+                    <th>ID Recogida</th>
+                    <th>Mensajero Entrega</th>
+                    <th>ID Entrega</th>
+                    <th>Entregado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="route : ${routes}">
+                    <td th:text="${#temporals.format(route.createdAt, 'yyyy-MM-dd HH:mm')}">2025-08-21</td>
+                    <td th:text="${route.clientId}">1</td>
+                    <td th:text="${route.clientName}">Cliente Ejemplo</td>
+                    <td th:text="${route.address}">Dirección Ejemplo</td>
+                    <td th:text="${route.pickupCourier != null ? route.pickupCourier.name : 'No asignado'}"></td>
+                    <td th:text="${route.pickupRoute}">100</td>
+                    <td th:text="${route.deliveryCourier != null ? route.deliveryCourier : 'No asignado'}">Courier</td>
+                    <td th:text="${route.deliveryRoute != null ? route.deliveryRoute : 'N/A'}">200</td>
+                    <td th:text="${route.delivered}">false</td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
 
     <!-- FOOTER -->
     <div th:insert="fragments/layout :: footer"></div>

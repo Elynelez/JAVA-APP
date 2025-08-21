@@ -40,7 +40,7 @@ public class AppController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @GetMapping("/delivery/table")
+    @GetMapping("/delivery/route/table")
     public String delivery_table(Model model) {
         List<Route> routes = routeRepository.findAll();
         model.addAttribute("routes", routes);

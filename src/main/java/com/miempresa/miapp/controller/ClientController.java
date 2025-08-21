@@ -1,11 +1,13 @@
 package com.miempresa.miapp.controller;
 
 import com.miempresa.miapp.model.Client;
+import com.miempresa.miapp.model.Route;
 import com.miempresa.miapp.model.User;
 import com.miempresa.miapp.repository.ClientRepository;
 import com.miempresa.miapp.repository.UserRepository;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -15,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,6 +57,13 @@ public class ClientController {
         boolean exists = clientRepository.existsByIdAndUserId(id, usuario);
 
         return ResponseEntity.ok(exists);
+    }
+
+    @GetMapping("/delivery/client/table")
+    public String client_table(Model model) {
+        List<Client> clients = clientRepository.findAll();
+        model.addAttribute("clients", clients);
+        return "pages/client-table";
     }
 
 }
