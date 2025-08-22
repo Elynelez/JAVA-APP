@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
@@ -37,5 +39,17 @@ public class CourierController {
         courierRepository.save(courier);
 
         return "redirect:/delivery/courier/form?success=true";
+    }
+
+    @GetMapping("/delivery/courier/table")
+    public String listCouriers(Model model) {
+        model.addAttribute("couriers", courierRepository.findAll());
+        return "pages/courier-table";
+    }
+
+    @GetMapping("/delivery/courier/form")
+    public String courier_form(Model model) {
+        model.addAttribute("messenger", new Courier());
+        return "pages/courier-form";
     }
 }

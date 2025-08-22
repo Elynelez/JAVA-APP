@@ -1,18 +1,13 @@
 package com.miempresa.miapp.controller;
 
 import com.miempresa.miapp.model.Client;
-import com.miempresa.miapp.model.Route;
 import com.miempresa.miapp.model.User;
 import com.miempresa.miapp.repository.ClientRepository;
 import com.miempresa.miapp.repository.UserRepository;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -64,6 +59,12 @@ public class ClientController {
         List<Client> clients = clientRepository.findAll();
         model.addAttribute("clients", clients);
         return "pages/client-table";
+    }
+
+    @GetMapping("/delivery/client/form")
+    public String client_form(Model model) {
+        model.addAttribute("client", new Client());
+        return "pages/client-form";
     }
 
 }
