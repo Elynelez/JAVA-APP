@@ -6,9 +6,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller; 
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.miempresa.miapp.model.Client;
@@ -20,6 +22,8 @@ import com.miempresa.miapp.repository.CourierRepository;
 import com.miempresa.miapp.repository.RouteRepository;
 import com.miempresa.miapp.repository.UserRepository;
 
+@Controller
+@RequestMapping("/delivery")   
 public class RouteController {
 
     @Autowired
@@ -34,14 +38,14 @@ public class RouteController {
     @Autowired
     private ClientRepository clientRepository;
 
-    @GetMapping("/delivery/route/table")
+    @GetMapping("/route/table")
     public String delivery_table(Model model) {
         List<Route> routes = routeRepository.findAll();
         model.addAttribute("routes", routes);
         return "pages/delivery-table";
     }
 
-    @GetMapping("delivery/route/form")
+    @GetMapping("/route/form")
     public String delivery_form(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
@@ -50,7 +54,7 @@ public class RouteController {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
 
         List<Courier> couriers = courierRepository.findByUserId(usuario);
-        model.addAttribute("coursiers", couriers);
+        model.addAttribute("couriers", couriers);   
 
         List<Client> clients = clientRepository.findByUserId(usuario);
         model.addAttribute("clients", clients);
@@ -58,9 +62,9 @@ public class RouteController {
         return "pages/delivery-form";
     }
 
-    @PostMapping("delivery/travel")
+    @PostMapping("/travel")
     public String saveRoute(@RequestParam List<String> orders,
-            @RequestParam String coursier) {
+                            @RequestParam String courier) {  
 
         for (String code : orders) {
             Client client = clientRepository.findById(code)
@@ -71,9 +75,10 @@ public class RouteController {
             route.setAddress(client.getAddress());
             route.setCreatedAt(LocalDateTime.now());
             route.setDelivered(false);
+
             routeRepository.save(route);
         }
 
-        return "redirect:/delivery/table?success=true";
+        return "redirect:/delivery/route/table?success=true"; 
     }
 }
