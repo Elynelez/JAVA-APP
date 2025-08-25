@@ -62,23 +62,23 @@ public class RouteController {
         return "pages/delivery-form";
     }
 
-    @PostMapping("/travel")
-    public String saveRoute(@RequestParam List<String> orders,
-                            @RequestParam String courier) {  
+    // @PostMapping("/travel")
+    // public String saveRoute(@RequestParam List<String> orders,
+    //                         @RequestParam String courier) {  
 
-        for (String code : orders) {
-            Client client = clientRepository.findById(code)
-                    .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + code));
+    //     for (String code : orders) {
+    //         Client client = clientRepository.findById(code)
+    //                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + code));
 
-            Route route = new Route();
-            route.setClientName(client.getName());
-            route.setAddress(client.getAddress());
-            route.setCreatedAt(LocalDateTime.now());
-            route.setDelivered(false);
+    //         Route route = new Route();
+    //         route.setClientName(client.getName());
+    //         route.setAddress(client.getAddress());
+    //         route.setCreatedAt(LocalDateTime.now());
+    //         route.setDelivered(false);
 
-            routeRepository.save(route);
-        }
+    //         routeRepository.save(route);
+    //     }
 
-        return "redirect:/delivery/route/table?success=true"; 
-    }
+    //     return "redirect:/delivery/route/table?success=true"; 
+    // }
 }

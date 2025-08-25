@@ -28,9 +28,9 @@
 
                         <!-- Mensajero -->
                         <div class="mb-3">
-                            <label for="coursier" class="form-label">Mensajero</label>
-                            <select name="coursier" id="coursier" class="form-select" required>
-                                <option th:each="c : ${coursiers}" th:value="${c.id}" th:text="${c.name}"></option>
+                            <label for="courier" class="form-label">Mensajero</label>
+                            <select name="courier" id="courier" class="form-select" required>
+                                <option th:each="c : ${couriers}" th:value="${c.id}" th:text="${c.name}"></option>
                             </select>
                         </div>
 
