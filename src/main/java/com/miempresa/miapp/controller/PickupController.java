@@ -96,6 +96,12 @@ public class PickupController {
         public String saveRoute(@RequestParam List<String> orders,
                         @RequestParam String courier) {
 
+                Long courierId = Long.parseLong(courier);
+                Courier pickupCourier = courierRepository.findById(courierId)
+                                .orElseThrow(() -> new RuntimeException("Courier no encontrado: " + courier));
+
+                int pickupRouteId = (int) (System.currentTimeMillis() / 1000);
+
                 for (String code : orders) {
                         Client client = clientRepository.findById(code)
                                         .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + code));
@@ -105,6 +111,8 @@ public class PickupController {
                         route.setAddress(client.getAddress());
                         route.setCreatedAt(LocalDateTime.now());
                         route.setDelivered(false);
+                        route.setPickupCourier(pickupCourier);
+                        route.setPickupRoute(pickupRouteId); 
 
                         routeRepository.save(route);
                 }

@@ -1,13 +1,21 @@
 package com.miempresa.miapp.controller;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
 import com.miempresa.miapp.model.Client;
 import com.miempresa.miapp.model.User;
 import com.miempresa.miapp.repository.ClientRepository;
 import com.miempresa.miapp.repository.UserRepository;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,6 +25,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.io.ByteArrayOutputStream;
 
 @Controller
 public class ClientController {
@@ -27,8 +38,17 @@ public class ClientController {
     @Autowired
     private UserRepository userRepository;
 
+    public byte[] generateQRCodeImage(String text, int width, int height) throws WriterException, IOException {
+        BitMatrix bitMatrix = new MultiFormatWriter().encode(text, BarcodeFormat.QR_CODE, width, height);
+        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+        return pngOutputStream.toByteArray();
+    }
+
     @PostMapping("/client/save")
     public String saveClient(@ModelAttribute Client client) {
+        client.setId(client.getId().toUpperCase());
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
@@ -38,7 +58,26 @@ public class ClientController {
         client.setUserId(usuario);
         clientRepository.save(client);
 
-        return "redirect:/delivery/client/form?success=true";
+        return "redirect:/client/download-qr?id=" + client.getId();
+    }
+
+    @GetMapping("/client/download-qr")
+    public ResponseEntity<byte[]> downloadQr(@RequestParam String id) throws WriterException, IOException {
+        Client client = clientRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + id));
+
+        String qrContent = "ID: " + client.getId() + "\nNombre: " + client.getName() + "\nTeléfono: "
+                + client.getPhone();
+        byte[] qrImage = generateQRCodeImage(qrContent, 300, 300);
+
+        ContentDisposition contentDisposition = ContentDisposition.builder("attachment")
+                .filename("cliente_" + client.getId() + ".png")
+                .build();
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .header("Content-Type", "image/png")
+                .header("Content-Disposition", contentDisposition.toString())
+                .body(qrImage);
     }
 
     @GetMapping("/check-client/{id}")
