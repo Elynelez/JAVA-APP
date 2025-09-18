@@ -6,8 +6,10 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.miempresa.miapp.model.Client;
+import com.miempresa.miapp.model.Customer;
 import com.miempresa.miapp.model.User;
 import com.miempresa.miapp.repository.ClientRepository;
+import com.miempresa.miapp.repository.CustomerRepository;
 import com.miempresa.miapp.repository.UserRepository;
 
 import java.io.IOException;
@@ -36,6 +38,9 @@ public class ClientController {
     private ClientRepository clientRepository;
 
     @Autowired
+    private CustomerRepository customerRepository;
+
+    @Autowired
     private UserRepository userRepository;
 
     public byte[] generateQRCodeImage(String text, int width, int height) throws WriterException, IOException {
@@ -59,6 +64,25 @@ public class ClientController {
         clientRepository.save(client);
 
         return "redirect:/client/download-qr?id=" + client.getId();
+    }
+
+    @PostMapping("/customer/save")
+    public String saveCustomer(@ModelAttribute Customer customer, Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        User usuario = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+
+        customer.setUserId(usuario);
+        customerRepository.save(customer);
+
+        String link = "http://localhost:8081/delivery/client/form/" + customer.getId();
+        model.addAttribute("message", "Pásale el siguiente link a tu cliente:");
+        model.addAttribute("link", link);
+        model.addAttribute("customer", new Customer());
+
+        return "pages/customer-form";
     }
 
     @GetMapping("/client/download-qr")
@@ -100,10 +124,18 @@ public class ClientController {
         return "pages/client-table";
     }
 
-    @GetMapping("/delivery/client/form")
-    public String client_form(Model model) {
+    @GetMapping("/delivery/client/form/{id}")
+    public String client_form_with_id(@PathVariable Long id, Model model) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + id));
+
         model.addAttribute("client", new Client());
         return "pages/client-form";
     }
 
+    @GetMapping("/delivery/customer/form")
+    public String customer_form(Model model) {
+        model.addAttribute("customer", new Customer());
+        return "pages/customer-form";
+    }
 }

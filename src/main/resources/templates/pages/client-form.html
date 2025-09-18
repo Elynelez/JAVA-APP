@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Crear Cliente | Mensajería Rápida</title>
+    <title>Crear Orden</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
@@ -25,7 +25,7 @@
             <div class="card shadow-sm rounded-4 border-0">
                 <div class="card-body p-5">
                     <h3 class="text-center mb-4 text-primary">
-                        <i class="bi bi-person-plus"></i> Crear Cliente
+                        <i class="bi bi-person-plus"></i> Crear Orden
                     </h3>
 
                     <form th:action="@{/client/save}" th:object="${client}" method="post">
@@ -58,18 +58,20 @@
                                 placeholder="Dirección" required>
                         </div>
 
-                        <!-- Ciudad -->
-                        <div class="mb-3">
-                            <label for="city" class="form-label">Ciudad</label>
-                            <input type="text" class="form-control" id="city" th:field="*{city}" placeholder="Ciudad"
-                                required>
-                        </div>
-
                         <!-- Departamento -->
                         <div class="mb-3">
                             <label for="department" class="form-label">Departamento</label>
-                            <input type="text" class="form-control" id="department" th:field="*{department}"
-                                placeholder="Departamento" required>
+                            <select class="form-select" id="department" th:field="*{department}" required>
+                                <option value="" disabled selected hidden>Seleccione un departamento</option>
+                            </select>
+                        </div>
+
+                        <!-- Ciudad -->
+                        <div class="mb-3">
+                            <label for="city" class="form-label">Ciudad</label>
+                            <select class="form-select" id="city" th:field="*{city}" required>
+                                <option value="" disabled selected hidden>Seleccione una ciudad</option>
+                            </select>
                         </div>
 
                         <!-- Teléfono -->
@@ -89,7 +91,7 @@
                         <!-- Botón Guardar -->
                         <div class="d-grid">
                             <button type="submit" class="btn btn-success btn-lg">
-                                <i class="bi bi-save"></i> Guardar Cliente
+                                <i class="bi bi-save"></i> Descargar orden
                             </button>
                         </div>
 
@@ -103,6 +105,63 @@
     <div th:insert="fragments/layout :: footer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function generateUUID() {
+            return '4000xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("id").value = generateUUID().toUpperCase();
+        });
+        const departmentSelect = document.getElementById("department");
+        const citySelect = document.getElementById("city");
+
+        // Cargar departamentos desde la API
+        async function loadDepartments() {
+            try {
+                const res = await fetch("https://api-colombia.com/api/v1/Department");
+                const data = await res.json();
+
+                data.forEach(dep => {
+                    const option = document.createElement("option");
+                    option.value = dep.id;          // usamos el ID para luego consultar las ciudades
+                    option.textContent = dep.name;  // mostramos el nombre
+                    departmentSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error cargando departamentos:", error);
+            }
+        }
+
+        // Evento: al cambiar el departamento, consultar ciudades
+        departmentSelect.addEventListener("change", async function () {
+            citySelect.innerHTML = '<option value="" disabled selected hidden>Seleccione una ciudad</option>';
+
+            const depId = this.value;
+            if (!depId) return;
+
+            try {
+                const res = await fetch(`https://api-colombia.com/api/v1/Department/${depId}/cities`);
+                const cities = await res.json();
+
+                cities.forEach(city => {
+                    const option = document.createElement("option");
+                    option.value = city.name;
+                    option.textContent = city.name;
+                    citySelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error cargando ciudades:", error);
+            }
+        });
+
+        // Inicializar departamentos
+        loadDepartments();
+    </script>
+
 </body>
 
 </html>
