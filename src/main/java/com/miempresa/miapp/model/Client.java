@@ -14,6 +14,10 @@ public class Client {
     @JoinColumn(name = "user_id", nullable = true)
     private User userId;
 
+    @ManyToOne
+    @JoinColumn(name = "customer_id", nullable = false)
+    private Customer customerId;
+
     private String name;
     private String cedula;
     private String address;
@@ -22,7 +26,8 @@ public class Client {
     private String phone;
     private BigDecimal montoTotal;
 
-    public Client() {}
+    public Client() {
+    }
 
     // Getters y Setters
     public String getId() {
@@ -39,6 +44,14 @@ public class Client {
 
     public void setUserId(User userId) {
         this.userId = userId;
+    }
+
+    public Customer getCustomer() {
+        return customerId;
+    }
+
+    public void setCustomer(Customer customerId) {
+        this.customerId = customerId;
     }
 
     public String getName() {

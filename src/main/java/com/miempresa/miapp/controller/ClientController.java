@@ -50,6 +50,25 @@ public class ClientController {
         return pngOutputStream.toByteArray();
     }
 
+    @GetMapping("/delivery/client/form/{id_customer}/{id_user}")
+    public String client_form_with_id(@PathVariable Long id_customer,
+            @PathVariable Long id_user,
+            Model model) {
+
+        Customer customer = customerRepository.findById(id_customer)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + id_customer));
+
+        User user = userRepository.findById(id_user)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id_user));
+
+        Client client = new Client();
+        client.setUserId(user);
+        client.setCustomer(customer);
+
+        model.addAttribute("client", client);
+        return "pages/client-form";
+    }
+
     @PostMapping("/client/save")
     public String saveClient(@ModelAttribute Client client) {
         client.setId(client.getId().toUpperCase());
@@ -71,13 +90,14 @@ public class ClientController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
-        User usuario = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
 
-        customer.setUserId(usuario);
+        customer.setUserId(user);
         customerRepository.save(customer);
 
-        String link = "http://localhost:8081/delivery/client/form/" + customer.getId();
+        String link = "http://localhost:8081/delivery/client/form/" + customer.getId() + "/"
+                + customer.getUserId().getId();
         model.addAttribute("message", "Pásale el siguiente link a tu cliente:");
         model.addAttribute("link", link);
         model.addAttribute("customer", new Customer());
@@ -122,15 +142,6 @@ public class ClientController {
         List<Client> clients = clientRepository.findAll();
         model.addAttribute("clients", clients);
         return "pages/client-table";
-    }
-
-    @GetMapping("/delivery/client/form/{id}")
-    public String client_form_with_id(@PathVariable Long id, Model model) {
-        Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + id));
-
-        model.addAttribute("client", new Client());
-        return "pages/client-form";
     }
 
     @GetMapping("/delivery/customer/form")

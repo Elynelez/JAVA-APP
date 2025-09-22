@@ -35,7 +35,7 @@
                 <tr>
                     <th>Nombre</th>
                     <th>Activo</th>
-                    <th>Acciones</th>
+                    <th style="width: 180px;">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -46,10 +46,14 @@
                         <span th:text="${courier.active} ? 'Sí' : 'No'">true</span>
                     </td>
                     <td>
-                        <a th:href="@{'/delivery/courier/edit/' + ${courier.id}}"
-                            class="btn btn-sm btn-primary">Editar</a>
-                        <a th:href="@{'/delivery/courier/delete/' + ${courier.id}}"
-                            class="btn btn-sm btn-danger">Eliminar</a>
+                        <div class="d-flex gap-1">
+                            <a th:href="@{'/delivery/courier/edit/' + ${courier.id}}"
+                                class="btn btn-sm btn-primary">Editar</a>
+                            <a th:href="@{'/delivery/courier/delete/' + ${courier.id}}"
+                                class="btn btn-sm btn-danger">Eliminar</a>
+                            <a th:href="@{'/delivery/courier/delete/' + ${courier.id}}"
+                                class="btn btn-sm btn-warning">Link</a>
+                        </div>
                     </td>
                 </tr>
             </tbody>
