@@ -63,7 +63,7 @@ public class ClientController {
 
         Client client = new Client();
         client.setUserId(user);
-        client.setCustomer(customer);
+        client.setCustomerId(customer);
 
         model.addAttribute("client", client);
         return "pages/client-form";

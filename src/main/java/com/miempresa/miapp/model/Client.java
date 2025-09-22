@@ -46,11 +46,11 @@ public class Client {
         this.userId = userId;
     }
 
-    public Customer getCustomer() {
+    public Customer getCustomerId() {
         return customerId;
     }
 
-    public void setCustomer(Customer customerId) {
+    public void setCustomerId(Customer customerId) {
         this.customerId = customerId;
     }
 

@@ -88,10 +88,10 @@
                                 placeholder="Monto total" step="0.01" required>
                         </div>
 
-                        <!-- <input type="hidden" th:value="${client.customerId != null ? client.customerId.id : ''}"
+                        <input type="hidden" th:field="*{userId}"
+                            name="userId" />
+                        <input type="hidden" th:field="*{customerId}"
                             name="customerId" />
-                        <input type="hidden" th:value="${client.userId != null ? client.userId.id : ''}"
-                            name="userId" /> -->
 
                         <!-- Botón Guardar -->
                         <div class="d-grid">
