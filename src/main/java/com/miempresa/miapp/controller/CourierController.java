@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import java.util.List;
 
 @Controller
 public class CourierController {
@@ -29,11 +30,11 @@ public class CourierController {
         String username = auth.getName();
 
         // Buscar el usuario en la base de datos
-        User usuario = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
 
         // Asignar el usuario al courier
-        courier.setUserId(usuario);
+        courier.setUserId(user);
 
         // Guardar el courier
         courierRepository.save(courier);
@@ -43,7 +44,18 @@ public class CourierController {
 
     @GetMapping("/delivery/courier/table")
     public String listCouriers(Model model) {
-        model.addAttribute("couriers", courierRepository.findAll());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        // Buscar el usuario en la base de datos
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+
+        // Buscar solo los couriers del usuario autenticado
+        List<Courier> couriers = courierRepository.findByUserId(user);
+        model.addAttribute("user", user);
+        model.addAttribute("couriers", couriers);
+
         return "pages/courier-table";
     }
 

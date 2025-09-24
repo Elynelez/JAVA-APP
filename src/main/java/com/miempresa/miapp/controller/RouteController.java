@@ -2,13 +2,15 @@ package com.miempresa.miapp.controller;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller; 
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,7 +25,7 @@ import com.miempresa.miapp.repository.RouteRepository;
 import com.miempresa.miapp.repository.UserRepository;
 
 @Controller
-@RequestMapping("/delivery")   
+@RequestMapping("/delivery")
 public class RouteController {
 
     @Autowired
@@ -40,45 +42,57 @@ public class RouteController {
 
     @GetMapping("/route/table")
     public String delivery_table(Model model) {
-        List<Route> routes = routeRepository.findAll();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        // Buscar el usuario en la base de datos
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+
+        List<Route> routes = routeRepository.findByUserId(user);
         model.addAttribute("routes", routes);
         return "pages/delivery-table";
     }
 
-    @GetMapping("/route/form")
-    public String delivery_form(Model model) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
+    @GetMapping("/route/form/{id_courier}/{id_user}")
+    public String delivery_form(@PathVariable Long id_courier,
+            @PathVariable Long id_user,
+            Model model) {
 
-        User usuario = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+        User user = userRepository.findById(id_user)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<Courier> couriers = courierRepository.findByUserId(usuario);
-        model.addAttribute("couriers", couriers);   
+        Optional<Courier> courier = courierRepository.findById(id_courier);
+        model.addAttribute("courier", courier);
 
-        List<Client> clients = clientRepository.findByUserId(usuario);
+        List<Client> clients = clientRepository.findByUserId(user);
         model.addAttribute("clients", clients);
 
         return "pages/delivery-form";
     }
 
-    // @PostMapping("/travel")
-    // public String saveRoute(@RequestParam List<String> orders,
-    //                         @RequestParam String courier) {  
+@PostMapping("/route/save")
+public String saveRoute(@RequestParam List<String> orders,
+                        @RequestParam String courier) {
 
-    //     for (String code : orders) {
-    //         Client client = clientRepository.findById(code)
-    //                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + code));
+    int deliveryRouteId = (int) (System.currentTimeMillis() / 1000);
 
-    //         Route route = new Route();
-    //         route.setClientName(client.getName());
-    //         route.setAddress(client.getAddress());
-    //         route.setCreatedAt(LocalDateTime.now());
-    //         route.setDelivered(false);
+    for (String code : orders) {
+        Client client = clientRepository.findById(code)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + code));
 
-    //         routeRepository.save(route);
-    //     }
+        Route route = new Route();
+        route.setClient(client); // relación ManyToOne
+        route.setClientName(client.getName());
+        route.setAddress(client.getAddress());
+        route.setDelivered(true);
+        route.setDeliveryCourier(courier);
+        route.setDeliveryRoute(deliveryRouteId);
 
-    //     return "redirect:/delivery/route/table?success=true"; 
-    // }
+        routeRepository.save(route);
+    }
+
+    return "redirect:/delivery/route/table?success=true";
+}
+
 }

@@ -96,6 +96,13 @@ public class PickupController {
         public String saveRoute(@RequestParam List<String> orders,
                         @RequestParam String courier) {
 
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                String username = auth.getName();
+
+                // Buscar el usuario en la base de datos
+                User user = userRepository.findByUsername(username)
+                                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+
                 Long courierId = Long.parseLong(courier);
                 Courier pickupCourier = courierRepository.findById(courierId)
                                 .orElseThrow(() -> new RuntimeException("Courier no encontrado: " + courier));
@@ -112,7 +119,9 @@ public class PickupController {
                         route.setCreatedAt(LocalDateTime.now());
                         route.setDelivered(false);
                         route.setPickupCourier(pickupCourier);
-                        route.setPickupRoute(pickupRouteId); 
+                        route.setPickupRoute(pickupRouteId);
+                        route.setClient(client);
+                        route.setUserId(user);
 
                         routeRepository.save(route);
                 }

@@ -12,6 +12,10 @@ public class Route {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = true)
+    private User userId;
+
     @Column(nullable = false)
     private String clientName;
 
@@ -42,20 +46,8 @@ public class Route {
     @JoinColumn(name = "client_id", referencedColumnName = "id")
     private Client client;
 
-    @Column(name = "client_id", insertable = false, updatable = false)
-    private String clientId;
-
     // --- Constructores ---
     public Route() {
-    }
-
-    public Route(String clientName, String address, Courier pickupCourier, String clientId) {
-        this.clientName = clientName;
-        this.address = address;
-        this.pickupCourier = pickupCourier;
-        this.createdAt = LocalDateTime.now();
-        this.delivered = false;
-        this.clientId = clientId;
     }
 
     // --- Getters y Setters ---
@@ -65,6 +57,14 @@ public class Route {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public User getUserId() {
+        return userId;
+    }
+
+    public void setUserId(User userId) {
+        this.userId = userId;
     }
 
     public String getClientName() {
@@ -131,12 +131,12 @@ public class Route {
         this.deliveryRoute = deliveryRoute;
     }
 
-    public String getClientId() {
-        return clientId;
+    public Client getClient() {
+        return client;
     }
 
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
+    public void setClient(Client client) {
+        this.client = client;
     }
 
     // --- equals y hashCode ---

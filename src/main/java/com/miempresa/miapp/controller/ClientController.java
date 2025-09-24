@@ -34,119 +34,126 @@ import java.io.ByteArrayOutputStream;
 @Controller
 public class ClientController {
 
-    @Autowired
-    private ClientRepository clientRepository;
+        @Autowired
+        private ClientRepository clientRepository;
 
-    @Autowired
-    private CustomerRepository customerRepository;
+        @Autowired
+        private CustomerRepository customerRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+        @Autowired
+        private UserRepository userRepository;
 
-    public byte[] generateQRCodeImage(String text, int width, int height) throws WriterException, IOException {
-        BitMatrix bitMatrix = new MultiFormatWriter().encode(text, BarcodeFormat.QR_CODE, width, height);
-        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
-        return pngOutputStream.toByteArray();
-    }
+        public byte[] generateQRCodeImage(String text, int width, int height) throws WriterException, IOException {
+                BitMatrix bitMatrix = new MultiFormatWriter().encode(text, BarcodeFormat.QR_CODE, width, height);
+                ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+                MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+                return pngOutputStream.toByteArray();
+        }
 
-    @GetMapping("/delivery/client/form/{id_customer}/{id_user}")
-    public String client_form_with_id(@PathVariable Long id_customer,
-            @PathVariable Long id_user,
-            Model model) {
+        @GetMapping("/delivery/client/form/{id_customer}/{id_user}")
+        public String client_form_with_id(@PathVariable Long id_customer,
+                        @PathVariable Long id_user,
+                        Model model) {
 
-        Customer customer = customerRepository.findById(id_customer)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + id_customer));
+                Customer customer = customerRepository.findById(id_customer)
+                                .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + id_customer));
 
-        User user = userRepository.findById(id_user)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id_user));
+                User user = userRepository.findById(id_user)
+                                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id_user));
 
-        Client client = new Client();
-        client.setUserId(user);
-        client.setCustomerId(customer);
+                Client client = new Client();
+                client.setUserId(user);
+                client.setCustomerId(customer);
 
-        model.addAttribute("client", client);
-        return "pages/client-form";
-    }
+                model.addAttribute("client", client);
+                return "pages/client-form";
+        }
 
-    @PostMapping("/client/save")
-    public String saveClient(@ModelAttribute Client client) {
-        client.setId(client.getId().toUpperCase());
+        @PostMapping("/client/save")
+        public String saveClient(@ModelAttribute Client client) {
+                client.setId(client.getId().toUpperCase());
+                clientRepository.save(client);
+                return "redirect:/client/download-qr?id=" + client.getId();
+        }
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
+        @PostMapping("/customer/save")
+        public String saveCustomer(@ModelAttribute Customer customer, Model model) {
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                String username = auth.getName();
 
-        User usuario = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+                User user = userRepository.findByUsername(username)
+                                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
 
-        client.setUserId(usuario);
-        clientRepository.save(client);
+                customer.setUserId(user);
+                customerRepository.save(customer);
 
-        return "redirect:/client/download-qr?id=" + client.getId();
-    }
+                String link = "http://localhost:8081/delivery/client/form/" + customer.getId() + "/"
+                                + customer.getUserId().getId();
+                model.addAttribute("message", "Pásale el siguiente link a tu cliente:");
+                model.addAttribute("link", link);
+                model.addAttribute("customer", new Customer());
 
-    @PostMapping("/customer/save")
-    public String saveCustomer(@ModelAttribute Customer customer, Model model) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
+                return "pages/customer-form";
+        }
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+        @GetMapping("/client/download-qr")
+        public ResponseEntity<byte[]> downloadQr(@RequestParam String id) throws WriterException, IOException {
+                Client client = clientRepository.findById(id)
+                                .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + id));
 
-        customer.setUserId(user);
-        customerRepository.save(customer);
+                String qrContent = "ID: " + client.getId() + "\nNombre: " + client.getName() + "\nTeléfono: "
+                                + client.getPhone();
+                byte[] qrImage = generateQRCodeImage(qrContent, 300, 300);
 
-        String link = "http://localhost:8081/delivery/client/form/" + customer.getId() + "/"
-                + customer.getUserId().getId();
-        model.addAttribute("message", "Pásale el siguiente link a tu cliente:");
-        model.addAttribute("link", link);
-        model.addAttribute("customer", new Customer());
+                ContentDisposition contentDisposition = ContentDisposition.builder("attachment")
+                                .filename("orden_" + client.getId() + ".png")
+                                .build();
 
-        return "pages/customer-form";
-    }
+                return ResponseEntity.status(HttpStatus.OK)
+                                .header("Content-Type", "image/png")
+                                .header("Content-Disposition", contentDisposition.toString())
+                                .body(qrImage);
+        }
 
-    @GetMapping("/client/download-qr")
-    public ResponseEntity<byte[]> downloadQr(@RequestParam String id) throws WriterException, IOException {
-        Client client = clientRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + id));
+        @GetMapping("/check-client/{id}")
+        public ResponseEntity<Boolean> checkClient(@PathVariable String id) {
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                String username = auth.getName();
 
-        String qrContent = "ID: " + client.getId() + "\nNombre: " + client.getName() + "\nTeléfono: "
-                + client.getPhone();
-        byte[] qrImage = generateQRCodeImage(qrContent, 300, 300);
+                User usuario = userRepository.findByUsername(username)
+                                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
 
-        ContentDisposition contentDisposition = ContentDisposition.builder("attachment")
-                .filename("cliente_" + client.getId() + ".png")
-                .build();
+                boolean exists = clientRepository.existsByIdAndUserId(id, usuario);
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .header("Content-Type", "image/png")
-                .header("Content-Disposition", contentDisposition.toString())
-                .body(qrImage);
-    }
+                return ResponseEntity.ok(exists);
+        }
 
-    @GetMapping("/check-client/{id}")
-    public ResponseEntity<Boolean> checkClient(@PathVariable String id) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth.getName();
+        @GetMapping("/delivery/client/table")
+        public String client_table(Model model) {
+                List<Client> clients = clientRepository.findAll();
+                model.addAttribute("clients", clients);
+                return "pages/client-table";
+        }
 
-        User usuario = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+        @GetMapping("/delivery/customer/form")
+        public String customer_form(Model model) {
+                model.addAttribute("customer", new Customer());
+                return "pages/customer-form";
+        }
 
-        boolean exists = clientRepository.existsByIdAndUserId(id, usuario);
+        @GetMapping("/delivery/customer/table")
+        public String listCustomers(Model model) {
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                String username = auth.getName();
 
-        return ResponseEntity.ok(exists);
-    }
+                // Buscar el usuario en la base de datos
+                User user = userRepository.findByUsername(username)
+                                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
 
-    @GetMapping("/delivery/client/table")
-    public String client_table(Model model) {
-        List<Client> clients = clientRepository.findAll();
-        model.addAttribute("clients", clients);
-        return "pages/client-table";
-    }
+                List<Customer> customers = customerRepository.findByUserId(user);
+                model.addAttribute("user", user);
+                model.addAttribute("customers", customers);
 
-    @GetMapping("/delivery/customer/form")
-    public String customer_form(Model model) {
-        model.addAttribute("customer", new Customer());
-        return "pages/customer-form";
-    }
+                return "pages/customer-table";
+        }
 }
