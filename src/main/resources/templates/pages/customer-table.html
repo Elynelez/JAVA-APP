@@ -74,7 +74,7 @@
                             <p>Pásale este link a <strong th:text="${customer.name}">Nombre</strong>:</p>
                             <div class="input-group">
                                 <input type="text" class="form-control"
-                                    th:value="@{'http://localhost:8081/delivery/client/form/' + ${customer.id} + '/' + ${user.id}}" readonly>
+                                    th:value="${customer.link}" readonly>
                                 <button class="btn btn-outline-secondary" type="button" onclick="copyLink(this)"
                                     >
                                     Copiar

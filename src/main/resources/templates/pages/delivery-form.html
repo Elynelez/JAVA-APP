@@ -26,22 +26,20 @@
                     </h3>
                     <form id="deliveryForm" th:action="@{/delivery/route/save}" method="post" th:object="${route}">
 
-                        <input type="hidden" th:field="*{courier.id}" name="courier" />
+                        <input type="hidden" th:field="*{deliveryCourier}" name="deliveryCourier" />
 
                         <!-- Escáner QR -->
                         <div class="mb-3">
                             <label class="form-label">Escanear Código QR</label>
                             <div id="reader" style="width:100%; max-width:350px; margin:auto;"></div>
                         </div>
-
-                        <!-- Agregar Pedido Manual -->
                         <div class="mb-3">
-                            <label for="itemInput" class="form-label">Agregar Pedido Manualmente</label>
+                            <label for="registroTipo" class="form-label">Selecciona el tipo de registro</label>
                             <div class="input-group">
-                                <input type="text" id="itemInput" class="form-control" placeholder="Ej: PED1234" />
-                                <button type="button" onclick="addItem()" class="btn btn-outline-primary">
-                                    <i class="bi bi-plus-circle"></i> Agregar
-                                </button>
+                                <select id="registroTipo" class="form-select">
+                                    <option value="cliente">Registro de paquetes de cliente</option>
+                                    <option value="centro">Registro de entrega centro logístico</option>
+                                </select>
                             </div>
                         </div>
 

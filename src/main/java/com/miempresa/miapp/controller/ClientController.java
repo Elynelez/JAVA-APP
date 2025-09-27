@@ -15,6 +15,7 @@ import com.miempresa.miapp.repository.UserRepository;
 import java.io.IOException;
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpStatus;
@@ -77,7 +78,7 @@ public class ClientController {
         }
 
         @PostMapping("/customer/save")
-        public String saveCustomer(@ModelAttribute Customer customer, Model model) {
+        public String saveCustomer(@ModelAttribute Customer customer, Model model, HttpServletRequest request) {
                 Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 String username = auth.getName();
 
@@ -87,8 +88,14 @@ public class ClientController {
                 customer.setUserId(user);
                 customerRepository.save(customer);
 
-                String link = "http://localhost:8081/delivery/client/form/" + customer.getId() + "/"
+                String baseUrl = request.getScheme() + "://" + request.getServerName() +
+                                (request.getServerPort() != 80 && request.getServerPort() != 443
+                                                ? ":" + request.getServerPort()
+                                                : "");
+
+                String link = baseUrl + "/delivery/client/form/" + customer.getId() + "/"
                                 + customer.getUserId().getId();
+
                 model.addAttribute("message", "Pásale el siguiente link a tu cliente:");
                 model.addAttribute("link", link);
                 model.addAttribute("customer", new Customer());
@@ -142,18 +149,30 @@ public class ClientController {
         }
 
         @GetMapping("/delivery/customer/table")
-        public String listCustomers(Model model) {
+        public String listCustomers(Model model, HttpServletRequest request) {
                 Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 String username = auth.getName();
 
-                // Buscar el usuario en la base de datos
                 User user = userRepository.findByUsername(username)
                                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
 
                 List<Customer> customers = customerRepository.findByUserId(user);
+
+                String baseUrl = request.getScheme() + "://" + request.getServerName() +
+                                (request.getServerPort() != 80 && request.getServerPort() != 443
+                                                ? ":" + request.getServerPort()
+                                                : "");
+
+                for (Customer customer : customers) {
+                        String link = baseUrl + "/delivery/client/form/" + customer.getId() + "/"
+                                        + customer.getUserId().getId();
+                        customer.setLink(link);
+                }
+
                 model.addAttribute("user", user);
                 model.addAttribute("customers", customers);
 
                 return "pages/customer-table";
         }
+
 }

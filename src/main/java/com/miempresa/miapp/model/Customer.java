@@ -19,7 +19,11 @@ public class Customer {
     @JoinColumn(name = "user_id", nullable = false)
     private User userId;
 
-    public Customer() {}
+    @Transient
+    private String link;
+
+    public Customer() {
+    }
 
     // Getters y setters
     public Long getId() {
@@ -52,5 +56,13 @@ public class Customer {
 
     public void setUserId(User userId) {
         this.userId = userId;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
     }
 }

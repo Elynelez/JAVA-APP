@@ -62,37 +62,40 @@ public class RouteController {
         User user = userRepository.findById(id_user)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Optional<Courier> courier = courierRepository.findById(id_courier);
-        model.addAttribute("courier", courier);
+        Courier courier = courierRepository.findById(id_courier)
+                .orElseThrow(() -> new RuntimeException("Courier not found"));
 
-        List<Client> clients = clientRepository.findByUserId(user);
-        model.addAttribute("clients", clients);
+        Route route = new Route();
+        route.setDeliveryCourier(String.valueOf(courier.getId()));
+
+        model.addAttribute("route", route);
+        model.addAttribute("clients", clientRepository.findByUserId(user));
 
         return "pages/delivery-form";
     }
 
-@PostMapping("/route/save")
-public String saveRoute(@RequestParam List<String> orders,
-                        @RequestParam String courier) {
+    @PostMapping("/route/save")
+    public String saveRoute(@RequestParam List<String> orders,
+            @RequestParam("deliveryCourier") String courier) {
 
-    int deliveryRouteId = (int) (System.currentTimeMillis() / 1000);
+        int deliveryRouteId = (int) (System.currentTimeMillis() / 1000);
 
-    for (String code : orders) {
-        Client client = clientRepository.findById(code)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + code));
+        for (String code : orders) {
+            Client client = clientRepository.findById(code)
+                    .orElseThrow(() -> new RuntimeException("Cliente no encontrado: " + code));
 
-        Route route = new Route();
-        route.setClient(client); // relación ManyToOne
-        route.setClientName(client.getName());
-        route.setAddress(client.getAddress());
-        route.setDelivered(true);
-        route.setDeliveryCourier(courier);
-        route.setDeliveryRoute(deliveryRouteId);
+            Route route = new Route();
+            route.setClient(client); // relación ManyToOne
+            route.setClientName(client.getName());
+            route.setAddress(client.getAddress());
+            route.setDelivered(true);
+            route.setDeliveryCourier(courier);
+            route.setDeliveryRoute(deliveryRouteId);
 
-        routeRepository.save(route);
+            routeRepository.save(route);
+        }
+
+        return "redirect:/delivery/route/table?success=true";
     }
-
-    return "redirect:/delivery/route/table?success=true";
-}
 
 }

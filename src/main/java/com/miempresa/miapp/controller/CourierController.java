@@ -5,6 +5,7 @@ import com.miempresa.miapp.model.User;
 import com.miempresa.miapp.repository.CourierRepository;
 import com.miempresa.miapp.repository.UserRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,16 +44,23 @@ public class CourierController {
     }
 
     @GetMapping("/delivery/courier/table")
-    public String listCouriers(Model model) {
+    public String listCouriers(Model model, HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
-        // Buscar el usuario en la base de datos
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
 
-        // Buscar solo los couriers del usuario autenticado
         List<Courier> couriers = courierRepository.findByUserId(user);
+
+        String baseUrl = request.getScheme() + "://" + request.getServerName() +
+                (request.getServerPort() != 80 && request.getServerPort() != 443 ? ":" + request.getServerPort() : "");
+
+        for (Courier courier : couriers) {
+            String link = baseUrl + "/delivery/route/form/" + courier.getId() + "/" + courier.getUserId().getId();
+            courier.setLink(link);
+        }
+
         model.addAttribute("user", user);
         model.addAttribute("couriers", couriers);
 
